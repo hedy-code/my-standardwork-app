@@ -74,44 +74,44 @@ function TimeInputCell({
     const val = e.target.value;
     setMinStr(val);
     if (val === '') {
-      const s = parseInt(secStr, 10);
-      onUpdateRow(rowId, { [field]: isNaN(s) ? '' : s });
+      const s = parseFloat(secStr);
+      onUpdateRow(rowId, { [field]: isNaN(s) ? '' : Math.round(s) });
       return;
     }
-    const m = parseFloat(val);
+    const m = parseInt(val, 10);
     if (!isNaN(m)) {
-      const s = parseInt(secStr || '0', 10);
-      onUpdateRow(rowId, { [field]: Math.round(m * 60) + (isNaN(s) ? 0 : s) });
+      const s = parseFloat(secStr || '0');
+      onUpdateRow(rowId, { [field]: Math.round(m * 60 + (isNaN(s) ? 0 : s)) });
     }
   };
 
   const handleSecChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    let s = parseInt(val, 10);
+    let s = parseFloat(val);
     
     // Auto carry-over logic: if >= 60, add to minutes
     if (!isNaN(s) && s >= 60) {
-      let m = parseFloat(minStr || '0');
+      let m = parseInt(minStr || '0', 10);
       if (isNaN(m)) m = 0;
       const extraM = Math.floor(s / 60);
-      s = s % 60;
+      s = Number((s % 60).toFixed(1)); // Keep 1 decimal
       m += extraM;
       setMinStr(m.toString());
       setSecStr(s.toString());
-      onUpdateRow(rowId, { [field]: Math.round(m * 60) + s });
+      onUpdateRow(rowId, { [field]: Math.round(m * 60 + s) });
       return;
     }
     
     setSecStr(val);
     if (val === '') {
-      const m = parseFloat(minStr);
-      onUpdateRow(rowId, { [field]: isNaN(m) ? '' : Math.round(m * 60) });
+      const m = parseInt(minStr, 10);
+      onUpdateRow(rowId, { [field]: isNaN(m) ? '' : m * 60 });
       return;
     }
     
     if (!isNaN(s)) {
-      const m = parseFloat(minStr || '0');
-      onUpdateRow(rowId, { [field]: Math.round((isNaN(m) ? 0 : m) * 60) + s });
+      const m = parseInt(minStr || '0', 10);
+      onUpdateRow(rowId, { [field]: Math.round((isNaN(m) ? 0 : m) * 60 + s) });
     }
   };
 
@@ -121,7 +121,7 @@ function TimeInputCell({
         <input
           type="number"
           min="0"
-          step="0.1"
+          step="1"
           value={minStr}
           onChange={handleMinChange}
           className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
@@ -133,7 +133,7 @@ function TimeInputCell({
         <input
           type="number"
           min="0"
-          step="1"
+          step="0.1"
           value={secStr}
           onChange={handleSecChange}
           className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
@@ -154,9 +154,8 @@ export default function LeftPanel({
 
   const unitLabel = globalTimeUnit === 'min' ? '分' : '秒';
 
-  const totalManual = rows.reduce((acc, row) => acc + (Number(row.manualTime) || 0), 0);
-  const totalAuto = rows.reduce((acc, row) => acc + (Number(row.autoTime) || 0), 0);
-  const totalWalk = rows.reduce((acc, row) => acc + (Number(row.walkTime) || 0), 0);
+  const totalSecondsAll = rows.reduce((acc, row) => 
+    acc + (Number(row.manualTime) || 0) + (Number(row.autoTime) || 0) + (Number(row.walkTime) || 0), 0);
 
   const formatHHMMSS = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -173,9 +172,9 @@ export default function LeftPanel({
             <tr className="h-14">
               <th className="px-1 w-10 text-center text-slate-600 font-semibold">序号</th>
               <th className="px-2 text-slate-600 font-semibold">作业名称</th>
-              <th className="px-0 w-[105px] text-center text-slate-600 font-semibold leading-tight">手动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
-              <th className="px-0 w-[105px] text-center text-slate-600 font-semibold leading-tight">自动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
-              <th className="px-0 w-[105px] text-center text-slate-600 font-semibold leading-tight">步行<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">手动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">自动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">步行<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
               <th className="px-2 w-10"></th>
             </tr>
           </thead>
@@ -192,13 +191,13 @@ export default function LeftPanel({
                     placeholder="作业内容..."
                   />
                 </td>
-                <td className="px-0 text-center">
+                <td className="px-1 text-center">
                   <TimeInputCell rowId={row.id} field="manualTime" totalSeconds={row.manualTime} globalTimeUnit={globalTimeUnit} onUpdateRow={onUpdateRow} />
                 </td>
-                <td className="px-0 text-center">
+                <td className="px-1 text-center">
                   <TimeInputCell rowId={row.id} field="autoTime" totalSeconds={row.autoTime} globalTimeUnit={globalTimeUnit} onUpdateRow={onUpdateRow} />
                 </td>
-                <td className="px-0 text-center relative pointer-events-none">
+                <td className="px-1 text-center relative pointer-events-none">
                   <div className="absolute top-[40px] left-0 right-0 z-10 pointer-events-auto">
                     <TimeInputCell rowId={row.id} field="walkTime" totalSeconds={row.walkTime} globalTimeUnit={globalTimeUnit} onUpdateRow={onUpdateRow} />
                   </div>
@@ -219,19 +218,11 @@ export default function LeftPanel({
       </div>
       
       <div className="p-4 border-t border-slate-100 mt-auto flex flex-col space-y-3 bg-slate-50">
-        <div className="grid grid-cols-3 gap-2">
-          <div className="flex flex-col items-center bg-indigo-50/50 border border-indigo-100/50 rounded py-1.5">
-            <span className="text-slate-500 text-[10px] font-bold mb-0.5">手动总计</span>
-            <span className="font-mono text-indigo-600 font-bold tracking-wider text-sm">{formatHHMMSS(totalManual)}</span>
-          </div>
-          <div className="flex flex-col items-center bg-rose-50/50 border border-rose-100/50 rounded py-1.5">
-            <span className="text-slate-500 text-[10px] font-bold mb-0.5">自动总计</span>
-            <span className="font-mono text-rose-600 font-bold tracking-wider text-sm">{formatHHMMSS(totalAuto)}</span>
-          </div>
-          <div className="flex flex-col items-center bg-orange-50/50 border border-orange-100/50 rounded py-1.5">
-            <span className="text-slate-500 text-[10px] font-bold mb-0.5">步行总计</span>
-            <span className="font-mono text-orange-600 font-bold tracking-wider text-sm">{formatHHMMSS(totalWalk)}</span>
-          </div>
+        <div className="flex justify-between items-center px-2">
+          <span className="text-slate-600 font-bold">总计时间</span>
+          <span className="font-mono text-indigo-600 text-xl font-black tracking-wider">
+            {formatHHMMSS(totalSecondsAll)}
+          </span>
         </div>
         <button
           onClick={onAddRow}
