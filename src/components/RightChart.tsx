@@ -96,11 +96,8 @@ export default function RightChart({ rows, scaleValue, scaleUnit, globalTimeUnit
   const formatTime = (totalSeconds: number) => {
     if (totalSeconds === 0) return '0';
     if (globalTimeUnit === 'sec') return `${totalSeconds}秒`;
-    const m = Math.floor(totalSeconds / 60);
-    const s = totalSeconds % 60;
-    if (m > 0 && s > 0) return `${m}分${s}秒`;
-    if (m > 0) return `${m}分钟`;
-    return `${s}秒`;
+    const valInMin = totalSeconds / 60;
+    return `${Number(valInMin.toFixed(1))}分`;
   };
 
   return (
@@ -111,7 +108,7 @@ export default function RightChart({ rows, scaleValue, scaleUnit, globalTimeUnit
         style={{ height: HEADER_HEIGHT, width: chartWidth }}
       >
         <div className="absolute font-bold text-slate-500 top-4 left-4 text-xs font-sans">
-          作业时间 (1格={scaleValue}{unitLabel})
+          作业时间（{unitLabel}）
         </div>
         {/* Render horizontal axis ticks */}
         {Array.from({ length: totalTicks }).map((_, i) => (

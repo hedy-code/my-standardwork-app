@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { TaskRow } from '../App';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -18,99 +18,57 @@ export default function LeftPanel({
   onDeleteRow,
 }: LeftPanelProps) {
   
-  const handleSecondsInput = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    rowId: string,
-    field: keyof TaskRow
-  ) => {
-    const val = e.target.value;
-    if (val === '') {
-      onUpdateRow(rowId, { [field]: '' });
-      return;
-    }
-    const num = parseInt(val, 10);
-    if (!isNaN(num)) {
-      onUpdateRow(rowId, { [field]: num });
-    }
-  };
-
-  const handleMinSecInput = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    rowId: string,
-    field: keyof TaskRow,
-    currentTotalSeconds: number | '',
-    type: 'min' | 'sec'
-  ) => {
-    const val = e.target.value;
-    const num = val === '' ? 0 : parseInt(val, 10);
-    
-    if (val !== '' && isNaN(num)) return;
-
-    const currentSecs = currentTotalSeconds === '' ? 0 : currentTotalSeconds;
-    const currentMin = Math.floor(currentSecs / 60);
-    const currentRemainderSec = currentSecs % 60;
-
-    let newTotalSeconds = 0;
-    if (type === 'min') {
-      newTotalSeconds = num * 60 + currentRemainderSec;
-    } else {
-      newTotalSeconds = currentMin * 60 + num;
-    }
-
-    // If both boxes would be empty/0 and the user cleared the input, maybe set to ''
-    if (val === '' && newTotalSeconds === 0) {
-        onUpdateRow(rowId, { [field]: '' });
-    } else {
-        onUpdateRow(rowId, { [field]: newTotalSeconds });
-    }
-  };
-
   const renderTimeInput = (row: TaskRow, field: keyof TaskRow) => {
     const totalSeconds = row[field] as number | '';
     
-    if (globalTimeUnit === 'sec') {
-      return (
-        <input
-          type="number"
-          min="0"
-          step="1"
-          value={totalSeconds}
-          onChange={(e) => handleSecondsInput(e, row.id, field)}
-          className="w-full px-2 py-1 text-center bg-transparent border-b border-transparent hover:bg-white focus:bg-white focus:border-blue-500 focus:outline-none transition-colors rounded"
-        />
-      );
+    let displayValue: number | string = '';
+    if (totalSeconds !== '') {
+      if (globalTimeUnit === 'min') {
+        const valInMin = totalSeconds / 60;
+        displayValue = Number(valInMin.toFixed(1));
+      } else {
+        displayValue = totalSeconds;
+      }
     }
 
-    // Minute Mode (Min:Sec)
-    const displayMin = totalSeconds === '' ? '' : Math.floor(totalSeconds / 60);
-    const displaySec = totalSeconds === '' ? '' : totalSeconds % 60;
-
     return (
-      <div className="flex items-center justify-center space-x-1 w-full px-1">
-        <input
-          type="number"
-          min="0"
-          step="1"
-          value={displayMin}
-          onChange={(e) => handleMinSecInput(e, row.id, field, totalSeconds, 'min')}
-          className="w-10 text-center bg-transparent border-b border-transparent hover:bg-white focus:bg-white focus:border-blue-500 focus:outline-none transition-colors rounded appearance-none"
-          placeholder="00"
-        />
-        <span className="text-slate-400 font-bold">:</span>
-        <input
-          type="number"
-          min="0"
-          step="1"
-          value={displaySec}
-          onChange={(e) => handleMinSecInput(e, row.id, field, totalSeconds, 'sec')}
-          className="w-10 text-center bg-transparent border-b border-transparent hover:bg-white focus:bg-white focus:border-blue-500 focus:outline-none transition-colors rounded appearance-none"
-          placeholder="00"
-        />
-      </div>
+      <input
+        type="number"
+        min="0"
+        step={globalTimeUnit === 'min' ? "0.1" : "1"}
+        value={displayValue}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val === '') {
+             onUpdateRow(row.id, { [field]: '' });
+             return;
+          }
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            if (globalTimeUnit === 'min') {
+              onUpdateRow(row.id, { [field]: Math.round(num * 60) });
+            } else {
+              onUpdateRow(row.id, { [field]: Math.round(num) });
+            }
+          }
+        }}
+        className="w-full px-2 py-1 text-center bg-transparent border-b border-transparent hover:bg-white focus:bg-white focus:border-blue-500 focus:outline-none transition-colors rounded appearance-none"
+        placeholder="0"
+      />
     );
   };
 
-  const unitLabel = globalTimeUnit === 'min' ? '分:秒' : '秒';
+  const unitLabel = globalTimeUnit === 'min' ? '分' : '秒';
+
+  const totalSecondsAll = rows.reduce((acc, row) => 
+    acc + (Number(row.manualTime) || 0) + (Number(row.autoTime) || 0) + (Number(row.walkTime) || 0), 0);
+
+  const formatHHMMSS = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="flex flex-col h-full bg-white z-20 relative">
@@ -165,10 +123,16 @@ export default function LeftPanel({
         </table>
       </div>
       
-      <div className="p-4 border-t border-slate-100 mt-auto">
+      <div className="p-4 border-t border-slate-100 mt-auto flex flex-col space-y-3 bg-slate-50">
+        <div className="flex justify-between items-center px-2">
+          <span className="text-slate-600 font-bold">总计时间</span>
+          <span className="font-mono text-indigo-600 text-xl font-black tracking-wider">
+            {formatHHMMSS(totalSecondsAll)}
+          </span>
+        </div>
         <button
           onClick={onAddRow}
-          className="flex items-center justify-center w-full py-3 border-2 border-dashed border-slate-300 text-slate-500 hover:border-indigo-400 hover:text-indigo-500 hover:bg-indigo-50/30 font-medium rounded-xl transition-all shadow-sm active:scale-[0.99]"
+          className="flex items-center justify-center w-full py-2.5 border-2 border-dashed border-slate-300 text-slate-500 hover:border-indigo-400 hover:text-indigo-500 hover:bg-indigo-50/30 font-medium rounded-xl transition-all shadow-sm active:scale-[0.99]"
         >
           <Plus size={20} className="mr-2" /> 增加一行数据
         </button>
