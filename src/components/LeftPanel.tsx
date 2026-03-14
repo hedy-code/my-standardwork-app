@@ -21,41 +21,110 @@ export default function LeftPanel({
   const renderTimeInput = (row: TaskRow, field: keyof TaskRow) => {
     const totalSeconds = row[field] as number | '';
     
-    let displayValue: number | string = '';
-    if (totalSeconds !== '') {
-      if (globalTimeUnit === 'min') {
-        const valInMin = totalSeconds / 60;
-        displayValue = Number(valInMin.toFixed(1));
-      } else {
-        displayValue = totalSeconds;
-      }
+    if (globalTimeUnit === 'sec') {
+      return (
+        <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded mx-1">
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={totalSeconds}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === '') {
+                onUpdateRow(row.id, { [field]: '' });
+                return;
+              }
+              const num = parseInt(val, 10);
+              if (!isNaN(num)) {
+                onUpdateRow(row.id, { [field]: num });
+              }
+            }}
+            className="w-full px-2 py-1 text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none"
+            placeholder="0"
+          />
+        </div>
+      );
     }
 
+    // Minute Mode (Min:Sec Boxes)
+    let displayMin: number | string = '';
+    let displaySec: number | string = '';
+    
+    if (totalSeconds !== '') {
+      displayMin = Math.floor(totalSeconds / 60);
+      displaySec = totalSeconds % 60;
+    }
+
+    const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      if (val === '') {
+        // If minutes are cleared but seconds exist, just store the seconds
+        if (displaySec !== '') {
+           onUpdateRow(row.id, { [field]: Number(displaySec) });
+        } else {
+           onUpdateRow(row.id, { [field]: '' });
+        }
+        return;
+      }
+      const m = parseFloat(val);
+      if (!isNaN(m)) {
+        const s = displaySec !== '' ? Number(displaySec) : 0;
+        onUpdateRow(row.id, { [field]: Math.round(m * 60) + s });
+      }
+    };
+
+    const handleSecChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      if (val === '') {
+        if (displayMin !== '') {
+           onUpdateRow(row.id, { [field]: Math.round(Number(displayMin) * 60) });
+        } else {
+           onUpdateRow(row.id, { [field]: '' });
+        }
+        return;
+      }
+      
+      let s = parseInt(val, 10);
+      if (!isNaN(s)) {
+        let m = displayMin !== '' ? Number(displayMin) : 0;
+        
+        // Auto carry-over logic: if > 59 or 60, add to minutes
+        if (s >= 60) {
+          const extraMins = Math.floor(s / 60);
+          s = s % 60;
+          m += extraMins;
+        }
+        
+        onUpdateRow(row.id, { [field]: Math.round(m * 60) + s });
+      }
+    };
+
     return (
-      <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded mx-1">
-        <input
-          type="number"
-          min="0"
-          step={globalTimeUnit === 'min' ? "0.1" : "1"}
-          value={displayValue}
-          onChange={(e) => {
-            const val = e.target.value;
-            if (val === '') {
-               onUpdateRow(row.id, { [field]: '' });
-               return;
-            }
-            const num = parseFloat(val);
-            if (!isNaN(num)) {
-              if (globalTimeUnit === 'min') {
-                onUpdateRow(row.id, { [field]: Math.round(num * 60) });
-              } else {
-                onUpdateRow(row.id, { [field]: Math.round(num) });
-              }
-            }
-          }}
-          className="w-full px-2 py-1 text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none"
-          placeholder="0"
-        />
+      <div className="flex items-center justify-center space-x-1 w-full px-1">
+        <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded flex-1">
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={displayMin === 0 && displaySec === '' ? '' : displayMin}
+            onChange={handleMinChange}
+            className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1"
+            placeholder="00"
+          />
+        </div>
+        <span className="text-slate-400 font-bold">:</span>
+        <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded flex-1">
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={displaySec === 0 && displayMin === '' ? '' : (displaySec !== '' ? displaySec.toString().padStart(2, '0') : '')}
+            onChange={handleSecChange}
+            className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1"
+            placeholder="00"
+          />
+        </div>
       </div>
     );
   };
