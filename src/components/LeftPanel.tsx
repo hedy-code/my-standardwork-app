@@ -149,9 +149,9 @@ export default function LeftPanel({
             <tr className="h-14">
               <th className="px-1 w-10 text-center text-slate-600 font-semibold">序号</th>
               <th className="px-2 text-slate-600 font-semibold">作业名称</th>
-              <th className="px-1 w-[70px] text-center text-slate-600 font-semibold leading-tight">手动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
-              <th className="px-1 w-[70px] text-center text-slate-600 font-semibold leading-tight">自动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
-              <th className="px-1 w-[70px] text-center text-slate-600 font-semibold leading-tight">步行<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">手动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">自动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">步行<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
               <th className="px-2 w-10"></th>
             </tr>
           </thead>
