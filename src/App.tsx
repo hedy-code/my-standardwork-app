@@ -290,7 +290,7 @@ function App() {
       <div className="flex-1 overflow-auto bg-slate-50 relative">
         <div className="flex min-w-max min-h-full">
           {/* Left Table Container */}
-          <div className="w-[400px] lg:w-[450px] flex-shrink-0 sticky left-0 z-20 bg-white border-r border-slate-200 shadow-[2px_0_12px_-4px_rgba(0,0,0,0.1)]">
+          <div className="w-[470px] lg:w-[500px] flex-shrink-0 sticky left-0 z-20 bg-white border-r border-slate-200 shadow-[2px_0_12px_-4px_rgba(0,0,0,0.1)]">
             <LeftPanel 
               rows={rows}
               globalTimeUnit={globalTimeUnit}
