@@ -32,29 +32,31 @@ export default function LeftPanel({
     }
 
     return (
-      <input
-        type="number"
-        min="0"
-        step={globalTimeUnit === 'min' ? "0.1" : "1"}
-        value={displayValue}
-        onChange={(e) => {
-          const val = e.target.value;
-          if (val === '') {
-             onUpdateRow(row.id, { [field]: '' });
-             return;
-          }
-          const num = parseFloat(val);
-          if (!isNaN(num)) {
-            if (globalTimeUnit === 'min') {
-              onUpdateRow(row.id, { [field]: Math.round(num * 60) });
-            } else {
-              onUpdateRow(row.id, { [field]: Math.round(num) });
+      <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded mx-1">
+        <input
+          type="number"
+          min="0"
+          step={globalTimeUnit === 'min' ? "0.1" : "1"}
+          value={displayValue}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === '') {
+               onUpdateRow(row.id, { [field]: '' });
+               return;
             }
-          }
-        }}
-        className="w-full px-2 py-1 text-center bg-transparent border-b border-transparent hover:bg-white focus:bg-white focus:border-blue-500 focus:outline-none transition-colors rounded appearance-none"
-        placeholder="0"
-      />
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+              if (globalTimeUnit === 'min') {
+                onUpdateRow(row.id, { [field]: Math.round(num * 60) });
+              } else {
+                onUpdateRow(row.id, { [field]: Math.round(num) });
+              }
+            }
+          }}
+          className="w-full px-2 py-1 text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none"
+          placeholder="0"
+        />
+      </div>
     );
   };
 
@@ -76,11 +78,11 @@ export default function LeftPanel({
         <table className="w-full text-left border-collapse table-fixed">
           <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm border-b border-slate-200">
             <tr className="h-14">
-              <th className="px-2 w-12 text-center text-slate-600 font-semibold">序号</th>
+              <th className="px-1 w-10 text-center text-slate-600 font-semibold">序号</th>
               <th className="px-2 text-slate-600 font-semibold">作业名称</th>
-              <th className="px-2 w-[100px] text-center text-slate-600 font-semibold leading-tight">手动<br/><span className="text-[10px] font-normal text-slate-400 tracking-wider">{unitLabel}(必输)</span></th>
-              <th className="px-2 w-[100px] text-center text-slate-600 font-semibold leading-tight">自动<br/><span className="text-[10px] font-normal text-slate-400 tracking-wider">{unitLabel}(选填)</span></th>
-              <th className="px-2 w-[100px] text-center text-slate-600 font-semibold leading-tight">步行<br/><span className="text-[10px] font-normal text-slate-400 tracking-wider">{unitLabel}(选填)</span></th>
+              <th className="px-1 w-[70px] text-center text-slate-600 font-semibold leading-tight">手动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[70px] text-center text-slate-600 font-semibold leading-tight">自动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[70px] text-center text-slate-600 font-semibold leading-tight">步行<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
               <th className="px-2 w-10"></th>
             </tr>
           </thead>
@@ -104,7 +106,7 @@ export default function LeftPanel({
                   {renderTimeInput(row, 'autoTime')}
                 </td>
                 <td className="px-1 text-center relative pointer-events-none">
-                  <div className="absolute top-[40px] left-1 right-1 z-10 bg-white/90 shadow-sm ring-1 ring-slate-200 rounded pointer-events-auto">
+                  <div className="absolute top-[40px] left-0 right-0 z-10 pointer-events-auto">
                     {renderTimeInput(row, 'walkTime')}
                   </div>
                 </td>
