@@ -40,7 +40,7 @@ export default function LeftPanel({
                 onUpdateRow(row.id, { [field]: num });
               }
             }}
-            className="w-full px-2 py-1 text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none"
+            className="w-full px-2 py-1 text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none no-spin"
             placeholder="0"
           />
         </div>
@@ -109,7 +109,7 @@ export default function LeftPanel({
             step="0.1"
             value={displayMin === 0 && displaySec === '' ? '' : displayMin}
             onChange={handleMinChange}
-            className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1"
+            className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
             placeholder="00"
           />
         </div>
@@ -121,7 +121,7 @@ export default function LeftPanel({
             step="1"
             value={displaySec === 0 && displayMin === '' ? '' : (displaySec !== '' ? displaySec.toString().padStart(2, '0') : '')}
             onChange={handleSecChange}
-            className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1"
+            className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
             placeholder="00"
           />
         </div>

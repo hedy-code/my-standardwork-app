@@ -15,14 +15,14 @@ body {
   background-color: #f3f4f6; /* minmal gray background */
 }
 
-/* Hide number input spin buttons */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+/* Hide number input spin buttons for specific inputs */
+input[type="number"].no-spin::-webkit-outer-spin-button,
+input[type="number"].no-spin::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input[type="number"] {
+input[type="number"].no-spin {
   -moz-appearance: textfield;
   appearance: textfield;
 }
