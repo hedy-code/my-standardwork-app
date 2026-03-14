@@ -49,7 +49,7 @@ function TimeInputCell({
         <input
           type="number"
           min="0"
-          step="1"
+          step="0.1"
           value={secStr}
           onChange={(e) => {
             const val = e.target.value;
@@ -58,8 +58,9 @@ function TimeInputCell({
               onUpdateRow(rowId, { [field]: '' });
               return;
             }
-            const num = parseInt(val, 10);
+            const num = parseFloat(val);
             if (!isNaN(num)) {
+              // For 'sec' mode, store the decimal value directly
               onUpdateRow(rowId, { [field]: num });
             }
           }}
@@ -74,31 +75,31 @@ function TimeInputCell({
     const val = e.target.value;
     setMinStr(val);
     if (val === '') {
-      const s = parseFloat(secStr);
-      onUpdateRow(rowId, { [field]: isNaN(s) ? '' : Math.round(s) });
+      const s = parseInt(secStr, 10);
+      onUpdateRow(rowId, { [field]: isNaN(s) ? '' : s });
       return;
     }
     const m = parseInt(val, 10);
     if (!isNaN(m)) {
-      const s = parseFloat(secStr || '0');
-      onUpdateRow(rowId, { [field]: Math.round(m * 60 + (isNaN(s) ? 0 : s)) });
+      const s = parseInt(secStr || '0', 10);
+      onUpdateRow(rowId, { [field]: m * 60 + s });
     }
   };
 
   const handleSecChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    let s = parseFloat(val);
+    let s = parseInt(val, 10);
     
     // Auto carry-over logic: if >= 60, add to minutes
     if (!isNaN(s) && s >= 60) {
       let m = parseInt(minStr || '0', 10);
       if (isNaN(m)) m = 0;
       const extraM = Math.floor(s / 60);
-      s = Number((s % 60).toFixed(1)); // Keep 1 decimal
+      s = s % 60;
       m += extraM;
       setMinStr(m.toString());
       setSecStr(s.toString());
-      onUpdateRow(rowId, { [field]: Math.round(m * 60 + s) });
+      onUpdateRow(rowId, { [field]: m * 60 + s });
       return;
     }
     
@@ -111,7 +112,7 @@ function TimeInputCell({
     
     if (!isNaN(s)) {
       const m = parseInt(minStr || '0', 10);
-      onUpdateRow(rowId, { [field]: Math.round((isNaN(m) ? 0 : m) * 60 + s) });
+      onUpdateRow(rowId, { [field]: (isNaN(m) ? 0 : m) * 60 + s });
     }
   };
 
@@ -133,7 +134,7 @@ function TimeInputCell({
         <input
           type="number"
           min="0"
-          step="0.1"
+          step="1"
           value={secStr}
           onChange={handleSecChange}
           className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
