@@ -1,4 +1,4 @@
-
+import React, { useState, useEffect } from 'react';
 import type { TaskRow } from '../App';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -10,6 +10,140 @@ interface LeftPanelProps {
   onDeleteRow: (id: string) => void;
 }
 
+function TimeInputCell({
+  rowId,
+  field,
+  totalSeconds,
+  globalTimeUnit,
+  onUpdateRow
+}: {
+  rowId: string;
+  field: keyof TaskRow;
+  totalSeconds: number | '';
+  globalTimeUnit: 'min' | 'sec';
+  onUpdateRow: (id: string, updates: Partial<TaskRow>) => void;
+}) {
+  const [minStr, setMinStr] = useState('');
+  const [secStr, setSecStr] = useState('');
+
+  // Sync standard values without overriding exact typed values if they are mathematically equal
+  useEffect(() => {
+    if (totalSeconds === '') {
+      setMinStr('');
+      setSecStr('');
+    } else if (globalTimeUnit === 'sec') {
+      setSecStr(totalSeconds.toString());
+      setMinStr('');
+    } else {
+      const currentMath = Math.round((parseFloat(minStr || '0') * 60) + parseInt(secStr || '0', 10));
+      if (currentMath !== totalSeconds) {
+        setMinStr(Math.floor(totalSeconds / 60).toString());
+        setSecStr((totalSeconds % 60).toString());
+      }
+    }
+  }, [totalSeconds, globalTimeUnit, minStr, secStr]);
+
+  if (globalTimeUnit === 'sec') {
+    return (
+      <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded mx-1">
+        <input
+          type="number"
+          min="0"
+          step="1"
+          value={secStr}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSecStr(val);
+            if (val === '') {
+              onUpdateRow(rowId, { [field]: '' });
+              return;
+            }
+            const num = parseInt(val, 10);
+            if (!isNaN(num)) {
+              onUpdateRow(rowId, { [field]: num });
+            }
+          }}
+          className="w-full px-2 py-1 text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none no-spin"
+          placeholder="0"
+        />
+      </div>
+    );
+  }
+
+  const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setMinStr(val);
+    if (val === '') {
+      const s = parseInt(secStr, 10);
+      onUpdateRow(rowId, { [field]: isNaN(s) ? '' : s });
+      return;
+    }
+    const m = parseFloat(val);
+    if (!isNaN(m)) {
+      const s = parseInt(secStr || '0', 10);
+      onUpdateRow(rowId, { [field]: Math.round(m * 60) + (isNaN(s) ? 0 : s) });
+    }
+  };
+
+  const handleSecChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    let s = parseInt(val, 10);
+    
+    // Auto carry-over logic: if >= 60, add to minutes
+    if (!isNaN(s) && s >= 60) {
+      let m = parseFloat(minStr || '0');
+      if (isNaN(m)) m = 0;
+      const extraM = Math.floor(s / 60);
+      s = s % 60;
+      m += extraM;
+      setMinStr(m.toString());
+      setSecStr(s.toString());
+      onUpdateRow(rowId, { [field]: Math.round(m * 60) + s });
+      return;
+    }
+    
+    setSecStr(val);
+    if (val === '') {
+      const m = parseFloat(minStr);
+      onUpdateRow(rowId, { [field]: isNaN(m) ? '' : Math.round(m * 60) });
+      return;
+    }
+    
+    if (!isNaN(s)) {
+      const m = parseFloat(minStr || '0');
+      onUpdateRow(rowId, { [field]: Math.round((isNaN(m) ? 0 : m) * 60) + s });
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center space-x-1 w-full px-1">
+      <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded flex-1">
+        <input
+          type="number"
+          min="0"
+          step="0.1"
+          value={minStr}
+          onChange={handleMinChange}
+          className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
+          placeholder="00"
+        />
+      </div>
+      <span className="text-slate-400 font-bold">:</span>
+      <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded flex-1">
+        <input
+          type="number"
+          min="0"
+          step="1"
+          value={secStr}
+          onChange={handleSecChange}
+          className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
+          placeholder="00"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function LeftPanel({
   rows,
   globalTimeUnit,
@@ -17,117 +151,6 @@ export default function LeftPanel({
   onUpdateRow,
   onDeleteRow,
 }: LeftPanelProps) {
-  
-  const renderTimeInput = (row: TaskRow, field: keyof TaskRow) => {
-    const totalSeconds = row[field] as number | '';
-    
-    if (globalTimeUnit === 'sec') {
-      return (
-        <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded mx-1">
-          <input
-            type="number"
-            min="0"
-            step="1"
-            value={totalSeconds}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === '') {
-                onUpdateRow(row.id, { [field]: '' });
-                return;
-              }
-              const num = parseInt(val, 10);
-              if (!isNaN(num)) {
-                onUpdateRow(row.id, { [field]: num });
-              }
-            }}
-            className="w-full px-2 py-1 text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none no-spin"
-            placeholder="0"
-          />
-        </div>
-      );
-    }
-
-    // Minute Mode (Min:Sec Boxes)
-    let displayMin: number | string = '';
-    let displaySec: number | string = '';
-    
-    if (totalSeconds !== '') {
-      displayMin = Math.floor(totalSeconds / 60);
-      displaySec = totalSeconds % 60;
-    }
-
-    const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      if (val === '') {
-        // If minutes are cleared but seconds exist, just store the seconds
-        if (displaySec !== '') {
-           onUpdateRow(row.id, { [field]: Number(displaySec) });
-        } else {
-           onUpdateRow(row.id, { [field]: '' });
-        }
-        return;
-      }
-      const m = parseFloat(val);
-      if (!isNaN(m)) {
-        const s = displaySec !== '' ? Number(displaySec) : 0;
-        onUpdateRow(row.id, { [field]: Math.round(m * 60) + s });
-      }
-    };
-
-    const handleSecChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      if (val === '') {
-        if (displayMin !== '') {
-           onUpdateRow(row.id, { [field]: Math.round(Number(displayMin) * 60) });
-        } else {
-           onUpdateRow(row.id, { [field]: '' });
-        }
-        return;
-      }
-      
-      let s = parseInt(val, 10);
-      if (!isNaN(s)) {
-        let m = displayMin !== '' ? Number(displayMin) : 0;
-        
-        // Auto carry-over logic: if > 59 or 60, add to minutes
-        if (s >= 60) {
-          const extraMins = Math.floor(s / 60);
-          s = s % 60;
-          m += extraMins;
-        }
-        
-        onUpdateRow(row.id, { [field]: Math.round(m * 60) + s });
-      }
-    };
-
-    return (
-      <div className="flex items-center justify-center space-x-1 w-full px-1">
-        <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded flex-1">
-          <input
-            type="number"
-            min="0"
-            step="0.1"
-            value={displayMin === 0 && displaySec === '' ? '' : displayMin}
-            onChange={handleMinChange}
-            className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
-            placeholder="00"
-          />
-        </div>
-        <span className="text-slate-400 font-bold">:</span>
-        <div className="bg-white/90 shadow-sm ring-1 ring-slate-200 rounded flex-1">
-          <input
-            type="number"
-            min="0"
-            step="1"
-            value={displaySec === 0 && displayMin === '' ? '' : (displaySec !== '' ? displaySec.toString().padStart(2, '0') : '')}
-            onChange={handleSecChange}
-            className="w-full text-center bg-transparent border-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors rounded appearance-none px-1 py-1 no-spin"
-            placeholder="00"
-          />
-        </div>
-      </div>
-    );
-  };
 
   const unitLabel = globalTimeUnit === 'min' ? '分' : '秒';
 
@@ -169,14 +192,14 @@ export default function LeftPanel({
                   />
                 </td>
                 <td className="px-1 text-center">
-                  {renderTimeInput(row, 'manualTime')}
+                  <TimeInputCell rowId={row.id} field="manualTime" totalSeconds={row.manualTime} globalTimeUnit={globalTimeUnit} onUpdateRow={onUpdateRow} />
                 </td>
                 <td className="px-1 text-center">
-                  {renderTimeInput(row, 'autoTime')}
+                  <TimeInputCell rowId={row.id} field="autoTime" totalSeconds={row.autoTime} globalTimeUnit={globalTimeUnit} onUpdateRow={onUpdateRow} />
                 </td>
                 <td className="px-1 text-center relative pointer-events-none">
                   <div className="absolute top-[40px] left-0 right-0 z-10 pointer-events-auto">
-                    {renderTimeInput(row, 'walkTime')}
+                    <TimeInputCell rowId={row.id} field="walkTime" totalSeconds={row.walkTime} globalTimeUnit={globalTimeUnit} onUpdateRow={onUpdateRow} />
                   </div>
                 </td>
                 <td className="px-2 text-center">
