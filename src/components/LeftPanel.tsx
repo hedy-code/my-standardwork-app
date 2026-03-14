@@ -53,6 +53,12 @@ function TimeInputCell({
           value={secStr}
           onChange={(e) => {
             const val = e.target.value;
+            
+            // Limit to 1 decimal place
+            if (val.includes('.') && val.split('.')[1].length > 1) {
+              return;
+            }
+
             setSecStr(val);
             if (val === '') {
               onUpdateRow(rowId, { [field]: '' });
