@@ -160,9 +160,9 @@ export default function LeftPanel({
 }: LeftPanelProps) {
 
   const unitLabel = globalTimeUnit === 'min' ? '分' : '秒';
-
-  const totalSecondsAll = rows.reduce((acc, row) => 
-    acc + (Number(row.manualTime) || 0) + (Number(row.autoTime) || 0) + (Number(row.walkTime) || 0), 0);
+  const totalManual = rows.reduce((acc, row) => acc + (Number(row.manualTime) || 0), 0);
+  const totalAuto = rows.reduce((acc, row) => acc + (Number(row.autoTime) || 0), 0);
+  const totalWalk = rows.reduce((acc, row) => acc + (Number(row.walkTime) || 0), 0);
 
   const formatHHMMSS = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -173,15 +173,15 @@ export default function LeftPanel({
 
   return (
     <div className="flex flex-col h-full bg-white z-20 relative">
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         <table className="w-full text-left border-collapse table-fixed">
           <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm border-b border-slate-200">
             <tr className="h-14">
               <th className="px-1 w-10 text-center text-slate-600 font-semibold">序号</th>
               <th className="px-2 text-slate-600 font-semibold">作业名称</th>
-              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">手动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
-              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">自动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
-              <th className="px-1 w-[86px] text-center text-slate-600 font-semibold leading-tight">步行<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[100px] text-center text-slate-600 font-semibold leading-tight">手动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[100px] text-center text-slate-600 font-semibold leading-tight">自动<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
+              <th className="px-1 w-[100px] text-center text-slate-600 font-semibold leading-tight">步行<br/><span className="text-[10px] font-normal text-slate-400">({unitLabel})</span></th>
               <th className="px-2 w-10"></th>
             </tr>
           </thead>
@@ -224,11 +224,31 @@ export default function LeftPanel({
         </table>
       </div>
       
-      <div className="p-4 border-t border-slate-100 mt-auto flex flex-col space-y-3 bg-slate-50">
+      <div className="p-4 border-t border-slate-100 mt-auto flex flex-col space-y-2 bg-slate-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="grid grid-cols-1 gap-1 px-2 pb-1 border-b border-slate-200/60 mb-1">
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] text-slate-500 font-medium">手动总计</span>
+            <span className="font-mono text-indigo-500 text-sm font-bold">
+              {formatHHMMSS(totalManual)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] text-slate-500 font-medium">自动总计</span>
+            <span className="font-mono text-indigo-500 text-sm font-bold">
+              {formatHHMMSS(totalAuto)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] text-slate-500 font-medium">步行总计</span>
+            <span className="font-mono text-indigo-500 text-sm font-bold">
+              {formatHHMMSS(totalWalk)}
+            </span>
+          </div>
+        </div>
         <div className="flex justify-between items-center px-2">
-          <span className="text-slate-600 font-bold">总计时间</span>
-          <span className="font-mono text-indigo-600 text-xl font-black tracking-wider">
-            {formatHHMMSS(totalSecondsAll)}
+          <span className="text-slate-700 font-bold">总计时间</span>
+          <span className="font-mono text-indigo-600 text-lg font-black tracking-wider">
+            {formatHHMMSS(totalManual + totalAuto + totalWalk)}
           </span>
         </div>
         <button
